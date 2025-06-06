@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Daily Protocol</title>
+    <style>
+        /* 1. Global Styles & Theming */
+        :root {
+            --bg-image: linear-gradient(135deg, #7f7fd5 0%, #86a8e7 50%, #91eae4 100%);
+            --panel-bg: rgba(255, 255, 255, 0.25);
+            --panel-border: rgba(255, 255, 255, 0.3);
+            --text-color: #1a1a1a;
+            --text-muted-color: #555555;
+            --accent-color: #007AFF;
+            --success-color: #34C759; 
+            --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --button-bg: rgba(255, 255, 255, 0.2);
+            --button-bg-hover: rgba(255, 255, 255, 0.3);
+            --button-bg-active: rgba(255, 255, 255, 0.4);
+            --border-radius-large: 20px;
+            --border-radius-medium: 16px;
+            --border-radius-small: 12px;
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-image: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+                --panel-bg: rgba(0, 0, 0, 0.25);
+                --panel-border: rgba(255, 255, 255, 0.1);
+                --text-color: #f0f0f0;
+                --text-muted-color: #aaaaaa;
+                --button-bg: rgba(255, 255, 255, 0.1);
+                --button-bg-hover: rgba(255, 255, 255, 0.15);
+                --button-bg-active: rgba(255, 255, 255, 0.2);
+                --success-color: #30D158;
+                --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior-y: contain;
+        }
+
+        body {
+            background: var(--bg-image);
+            background-attachment: fixed;
+            font-family: var(--font-stack);
+            color: var(--text-color);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* 2. Main Layout & Header */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .app-header {
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--border-radius-large);
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .header-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .app-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        /* Header Status Icons Styling */
+        .header-status-icons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            padding: 5px 0;
+        }
+        .status-icon-group {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            background-color: var(--button-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+        .status-icon-group svg {
+            width: 24px;
+            height: 24px;
+        }
+        .status-icon-tick {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 28px;
+            height: 28px;
+            color: white;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .status-icon-group.complete .status-icon-tick {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+
+        /* 3. Section Styling */
+        .section {
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--border-radius-large);
+            overflow: hidden;
+            transition: background 0.3s, opacity 0.3s;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-light);
+        }
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .section-header:hover {
+            background-color: rgba(255,255,255,0.08);
+        }
+
+        .section-title-group {
+            flex-grow: 1;
+            transition: opacity 0.3s;
+        }
+         .section.section-complete .section-title-group {
+            opacity: 0.5;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .section-note {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-muted-color);
+            margin-top: 5px;
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+        }
+        
+        .check-all-button, .info-icon {
+            background: var(--button-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: background-color 0.2s, color 0.2s, transform 0.1s;
+        }
+         .check-all-button:active, .info-icon:active {
+            transform: scale(0.95);
+        }
+        .check-all-button.section-complete-icon {
+            color: var(--success-color);
+            background-color: rgba(var(--success-color-rgb, 52, 199, 89), 0.15);
+        }
+
+         .check-all-button svg, .info-icon svg {
+            display: block;
+            width: 16px;
+            height: 16px;
+        }
+        .check-all-button:hover, .info-icon:hover {
+            background: var(--button-bg-hover);
+        }
+
+        .chevron-icon {
+            transition: transform 0.3s ease;
+            color: var(--text-muted-color);
+            width: 24px;
+            height: 24px;
+        }
+        
+        .section.collapsed .chevron-icon {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            max-height: 2000px;
+            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            padding-bottom: 10px;
+            opacity: 1;
+        }
+
+        .section.collapsed .section-content {
+            max-height: 0;
+            padding-bottom: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        
+        .supplement-list {
+            list-style: none;
+            margin: 0;
+            padding: 0 5px 0 5px;
+        }
+
+        .supplement-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 15px;
+            border-top: 1px solid var(--panel-border);
+            transition: opacity 0.3s, background-color 0.2s;
+            cursor: pointer;
+        }
+        .supplement-list li:first-child.supplement-item {
+             border-top: none;
+        }
+
+        .supplement-item:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+        
+        .supplement-item.checked {
+            opacity: 0.5;
+        }
+
+        .supplement-item label {
+            flex-grow: 1;
+            margin: 0 12px;
+            font-size: 16px;
+            position: relative;
+            pointer-events: none;
+        }
+        
+        .supplement-item.checked label {
+            color: var(--text-muted-color);
+        }
+
+        .supplement-item.checked label::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            height: 1.5px;
+            background: var(--text-muted-color);
+            transform: translateY(-50%);
+            animation: strike 0.3s ease-out forwards;
+            width: 100%;
+        }
+        
+        @keyframes strike {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .supplement-item input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 10px;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .supplement-item input[type="checkbox"]:checked {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3e%3c/svg%3e");
+        }
+        .supplement-item .info-icon {
+            margin-left: auto;
+            width: 28px;
+            height: 28px;
+        }
+
+
+        /* 4. Modal Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease, visibility 0s linear 0s;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--border-radius-large);
+            padding: 25px 30px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center; /* Center text in modal by default */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-content h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 15px; /* Less margin for tighter look */
+            color: var(--text-color);
+        }
+        .modal-content p {
+            margin: 0 0 12px 0;
+            line-height: 1.65;
+            font-size: 15px;
+        }
+        .modal-content p:last-child {
+            margin-bottom: 0;
+        }
+        .gemini-content {
+            text-align: left; /* Left align gemini content */
+            border-top: 1px solid var(--panel-border);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 15px 0;
+            margin: 15px 0;
+        }
+        .loading-spinner {
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 4px solid rgba(var(--accent-color-rgb, 0, 122, 255), 0.3); 
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal-action-button { 
+            background: var(--button-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--border-radius-small);
+            color: var(--text-color);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 12px 20px;
+            transition: background-color 0.2s, transform 0.1s;
+            display: block;
+            width: 100%; 
+            text-align: center;
+        }
+        .modal-action-button:hover {
+            background: var(--button-bg-hover);
+        }
+         .modal-action-button:active {
+            transform: scale(0.98);
+        }
+        .modal-action-button.primary { /* For primary actions like 'Reset' */
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+         .modal-action-button.primary:hover {
+            background-color: color-mix(in srgb, var(--accent-color) 90%, black);
+        }
+        .modal-buttons-container { 
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-top-row">
+                <h1>Daily Protocol</h1>
+                <!-- Analyse button removed -->
+            </div>
+            <div class="header-status-icons" id="header-status-icons">
+                <!-- Status Icons will be dynamically generated here -->
+            </div>
+        </header>
+
+        <main id="main-content">
+            <!-- Sections will be dynamically generated here -->
+        </main>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal-overlay" id="info-modal">
+        <div class="modal-content">
+            <p id="modal-text-content"></p>
+            <div class="modal-buttons-container">
+                 <button class="modal-action-button" id="info-modal-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completion / Gemini Modal -->
+    <div class="modal-overlay" id="completion-modal">
+        <div class="modal-content" id="completion-modal-content">
+            <!-- Content will be injected by JS -->
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- 1. DATA ---
+        const supplementData = [
+            { id: 'm1', section: 'morning', name: 'Spermidine', details: '4 caps (10mg), Longevity Box. Notes: Autophagy support' },
+            { id: 'm2', section: 'morning', name: 'TMG', details: '1 cap (600mg), Time Health. Notes: Methyl donor' },
+            { id: 'm3', section: 'morning', name: 'Alpha GPC', details: '1 cap (650mg), Longevity Box. Notes: Cognitive enhancement' },
+            { id: 'l1', section: 'shake', name: 'Greek Yoghurt', details: '150-200g, Collective/Fage Total. Notes: Probiotic base, casein protein, creamy texture' },
+            { id: 'l2', section: 'shake', name: 'Almond Milk', details: '300ml, Rude Health (Ultimate Organic). Notes: 5-8% organic Italian almonds, no emulsifiers' },
+            { id: 'l3', section: 'shake', name: 'MCT Oil', details: '1 tbsp, Hunter & Gather. Notes: Enhanced absorption with yoghurt fats' },
+            { id: 'l4', section: 'shake', name: 'Protein Powder', details: '1 scoop, Form (Pureblend). Notes: Organic pea + brown rice + pumpkin seed, 15g protein' },
+            { id: 'l5', section: 'shake', name: 'Collagen Powder', details: '1 scoop, Love Life Supplements (Ultimate). Notes: BODYBALANCE® bovine + L-Glycine + Vitamin C + UC-II' },
+            { id: 'l6', section: 'shake', name: 'Creatine', details: '5g, CLN Labs. Notes: 100% pure monohydrate, 200 mesh micronised' },
+            { id: 'l7', section: 'shake', name: 'Mushroom Blend', details: '1 scoop, Spacegoods (Rainbow Dust). Notes: Lion\'s Mane, Chaga, Cordyceps, Ashwagandha, 80mg caffeine' },
+            { id: 'l8', section: 'shake', name: 'Fibre Powder', details: 'As desired, Myota Health (Gut Booster). Notes: Low-FODMAP blend, enhanced with yoghurt probiotics' },
+            { id: 'l9', section: 'shake', name: 'Taurine', details: '2g powder, Alpha01. Notes: Anti-ageing foundation' },
+            { id: 'l10', section: 'shake', name: 'Honey', details: '1-2 tsp, Earthbreath (Buckwheat Raw). Notes: Raw Latvian buckwheat - skip pre-fasting days' },
+            { id: 'l11', section: 'lunch', name: 'JOLT Age Blocker', details: '3 caps, JOLT. Notes: NMN 500mg + Trans-Resveratrol 250mg + full longevity blend' },
+            { id: 'l12', section: 'lunch', name: 'Urolithin A', details: '2 softgels (500mg total), Timeline. Notes: Mitophagy support' },
+            { id: 'l13', section: 'lunch', name: 'GlyNAC', details: '2 caps (1000mg), Longevity Box. Notes: Split dose (1/2)' },
+            { id: 'l14', section: 'lunch', name: 'Spirulina/Chlorella', details: '4 tablets (2000mg total), Alpha01. Notes: Whole food nutrition' },
+            { id: 'l15', section: 'lunch', name: 'PQQ', details: '1 cap (20mg), Toniiq. Notes: Mitochondrial biogenesis' },
+            { id: 'l16', section: 'lunch', name: 'Quercetin', details: '1 cap (500mg), Time Health. Notes: Uric acid support' },
+            { id: 'd1', section: 'dinner', name: 'Red Yeast Rice + CoQ10', details: '1 tablet daily, Zenement. Notes: LDL support' },
+            { id: 'd2', section: 'dinner', name: 'Berberine', details: '2 caps (1000mg), Time Health. Notes: LDL reduction' },
+            { id: 'd3', section: 'dinner', name: 'Allopurinol', details: '1 tab (100mg), NHS (generic). Notes: 2hrs separate from others' },
+            { id: 'd4', section: 'dinner', name: 'Omega-3', details: '1 softgel (840mg EPA+DHA), Inessa Wellness. Notes: Anti-inflammatory' },
+            { id: 'd5', section: 'dinner', name: 'Astaxanthin', details: '1 softgel (8mg), Alpha01. Notes: Antioxidant protection' },
+            { id: 'd6', section: 'dinner', name: 'GlyNAC', details: '2 caps (1000mg), Longevity Box. Notes: Split dose (2/2)' },
+            { id: 'd7', section: 'dinner', name: 'Pterostilbene', details: '2 caps (300mg), Longevity Box. Notes: Trans-Pterostilbene 150mg + Grape Seed Extract 200mg' },
+            { id: 'd8', section: 'dinner', name: 'EVOO', details: '1 tbsp (high polyphenol), SP360. Notes: Fat-soluble absorption' },
+            { id: 'd9', section: 'dinner', name: 'Boron', details: '1 cap (8mg), Time Health. Notes: SHBG optimisation' },
+            { id: 'b1', section: 'bedtime', name: 'L-Theanine', details: '1 cap (400mg), Alpha01. Notes: Calm focus, GABA support' },
+            { id: 'b2', section: 'bedtime', name: 'Magnesium Glycinate 3-in-1', details: '1-2 caps (384mg elemental), Nutrition Geeks. Notes: Sleep & recovery' },
+            { id: 'b3', section: 'bedtime', name: 'Ashwagandha', details: '500mg, Toniiq. Notes: Cortisol management' },
+            { id: 'b4', section: 'bedtime', name: 'Apigenin', details: '1-2 caps (50mg each), Time Health. Notes: Sleep onset' }
+        ];
+        
+        const sectionInfo = {
+            morning: { title: '🌅 Morning', note: 'Coffee & water only until 12:30' },
+            shake: { title: '🥤 Break-Fast Shake', note: 'Ingredients for the shake' },
+            lunch: { title: '💊 Lunch Supplements', note: 'Take with shake' },
+            dinner: { title: '🍽️ Dinner', note: 'Supplements taken around 19:00' },
+            bedtime: { title: '🌙 Bedtime', note: 'Supplements taken around 21:30' }
+        };
+
+        const statusIconConfig = {
+            morning: { sections: ['morning'], svg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17a5 5 0 0 0 5-5 5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5z"></path><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>` },
+            lunch: { sections: ['shake', 'lunch'], svg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>` },
+            dinner: { sections: ['dinner'], svg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M15.5 10.5C15.5 11.3284 14.8284 12 14 12C13.1716 12 12.5 11.3284 12.5 10.5C12.5 9.67157 13.1716 9 14 9C14.8284 9 15.5 9.67157 15.5 10.5Z"></path><path d="M8.5 10.5C8.5 11.3284 7.82843 12 7 12C6.17157 12 5.5 11.3284 5.5 10.5C5.5 9.67157 6.17157 9 7 9C7.82843 9 8.5 9.67157 8.5 10.5Z"></path><path d="M15.5 15.5C15.5 15.5 14.5 17.5 12 17.5C9.5 17.5 8.5 15.5 8.5 15.5"></path></svg>` },
+            bedtime: { sections: ['bedtime'], svg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>` }
+        };
+
+        // Cache DOM elements
+        const mainContent = document.getElementById('main-content');
+        const infoModal = document.getElementById('info-modal');
+        const modalTextContent = document.getElementById('modal-text-content');
+        const infoModalCloseButton = document.getElementById('info-modal-close-btn');
+        const completionModal = document.getElementById('completion-modal');
+        const completionModalContent = document.getElementById('completion-modal-content');
+        const headerStatusIconsContainer = document.getElementById('header-status-icons');
+
+        let checkedItems = new Set();
+
+        // --- 2. STATE MANAGEMENT ---
+        function saveState() {
+            try {
+                localStorage.setItem('dailyProtocolCheckedSupplements', JSON.stringify(Array.from(checkedItems)));
+                const collapsedSections = [];
+                document.querySelectorAll('.section.collapsed').forEach(sectionEl => {
+                    if (sectionEl.dataset.sectionKey) {
+                        collapsedSections.push(sectionEl.dataset.sectionKey);
+                    }
+                });
+                localStorage.setItem('dailyProtocolCollapsedSections', JSON.stringify(collapsedSections));
+            } catch (e) {
+                console.error("Failed to save state to localStorage:", e);
+            }
+        }
+
+        function loadState() {
+            try {
+                const savedItems = JSON.parse(localStorage.getItem('dailyProtocolCheckedSupplements') || '[]');
+                checkedItems = new Set(savedItems);
+                const savedCollapsed = JSON.parse(localStorage.getItem('dailyProtocolCollapsedSections') || '[]');
+                return savedCollapsed;
+            } catch (e) {
+                console.error("Failed to load state from localStorage:", e);
+                checkedItems = new Set();
+                return [];
+            }
+        }
+        
+        function vibrate(duration = 50) {
+            if ('vibrate' in navigator) {
+                try { navigator.vibrate(duration); } catch (e) { console.warn("Haptic feedback failed:", e); }
+            }
+        }
+
+        // --- 3. RENDERING & UI UPDATES ---
+        function updateHeaderStatusIcons() {
+            Object.keys(statusIconConfig).forEach(iconKey => {
+                const config = statusIconConfig[iconKey];
+                const sectionsToCheck = config.sections;
+                
+                const isComplete = sectionsToCheck.every(sectionKey => {
+                    const itemsInSection = supplementData.filter(item => item.section === sectionKey);
+                    return itemsInSection.length > 0 && itemsInSection.every(item => checkedItems.has(item.id));
+                });
+                
+                const iconGroupEl = document.getElementById(`status-icon-${iconKey}`);
+                if (iconGroupEl) {
+                    if (isComplete) {
+                        iconGroupEl.classList.add('complete');
+                    } else {
+                        iconGroupEl.classList.remove('complete');
+                    }
+                }
+            });
+        }
+
+        function updateSectionVisuals(sectionKey) {
+            const sectionEl = mainContent.querySelector(`.section[data-section-key="${sectionKey}"]`);
+            if (!sectionEl) return;
+
+            const itemsInSection = supplementData.filter(item => item.section === sectionKey);
+            const allCheckedInSection = itemsInSection.length > 0 && itemsInSection.every(item => checkedItems.has(item.id));
+            
+            const checkAllBtn = sectionEl.querySelector('.check-all-button');
+
+            if (allCheckedInSection) {
+                sectionEl.classList.add('section-complete');
+                if(checkAllBtn) checkAllBtn.classList.add('section-complete-icon');
+            } else {
+                sectionEl.classList.remove('section-complete');
+                if(checkAllBtn) checkAllBtn.classList.remove('section-complete-icon');
+            }
+        }
+
+
+        function render(initiallyCollapsedSections = []) {
+            mainContent.innerHTML = ''; 
+            Object.keys(sectionInfo).forEach(key => {
+                const sectionData = sectionInfo[key];
+                const itemsInSection = supplementData.filter(item => item.section === key);
+                
+                const sectionEl = document.createElement('section');
+                sectionEl.className = 'section';
+                sectionEl.dataset.sectionKey = key;
+
+                if (initiallyCollapsedSections.includes(key)) {
+                     sectionEl.classList.add('collapsed');
+                } else if (key !== 'morning' && !initiallyCollapsedSections.length && !localStorage.getItem('dailyProtocolCollapsedSections')) {
+                    sectionEl.classList.add('collapsed');
+                }
+
+                sectionEl.innerHTML = `
+                    <div class="section-header" role="button" tabindex="0" aria-expanded="${!sectionEl.classList.contains('collapsed')}">
+                        <div class="section-title-group">
+                            <h2>${sectionData.title}</h2>
+                            <div class="section-note">${sectionData.note}</div>
+                        </div>
+                        <div class="header-icons">
+                            <button class="check-all-button" title="Tick/Untick All In Section" aria-label="Tick or untick all items in ${sectionData.title} section">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </button>
+                            <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 9L12 16L5 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="section-content" ${sectionEl.classList.contains('collapsed') ? 'aria-hidden="true"' : ''}>
+                        <ul class="supplement-list">
+                            ${itemsInSection.map(item => `
+                                <li class="supplement-item ${checkedItems.has(item.id) ? 'checked' : ''}" id="${item.id}" data-id="${item.id}" role="listitem">
+                                    <input type="checkbox" id="check-${item.id}" data-id="${item.id}" ${checkedItems.has(item.id) ? 'checked' : ''} aria-labelledby="label-${item.id}">
+                                    <label for="check-${item.id}" id="label-${item.id}">${item.name}</label>
+                                    <button class="info-icon" data-details="${item.details.replace(/"/g, '&quot;')}" title="More Info about ${item.name}" aria-label="More information about ${item.name}">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                    </button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+                mainContent.appendChild(sectionEl);
+                updateSectionVisuals(key);
+            });
+            updateHeaderStatusIcons(); 
+        }
+
+        function renderHeaderIcons() {
+            headerStatusIconsContainer.innerHTML = '';
+            const tickSVG = `<svg class="status-icon-tick-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            Object.keys(statusIconConfig).forEach(key => {
+                const config = statusIconConfig[key];
+                const iconGroup = document.createElement('div');
+                iconGroup.className = 'status-icon-group';
+                iconGroup.id = `status-icon-${key}`;
+                iconGroup.innerHTML = `${config.svg}<div class="status-icon-tick">${tickSVG}</div>`;
+                headerStatusIconsContainer.appendChild(iconGroup);
+            });
+        }
+        
+        function performReset() {
+            vibrate([80, 50, 80]);
+            checkedItems.clear();
+            localStorage.removeItem('dailyProtocolCheckedSupplements');
+            localStorage.removeItem('dailyProtocolCollapsedSections'); 
+            render(); 
+            completionModal.classList.remove('visible');
+        }
+
+        function showInitialCompletionModal() {
+            completionModalContent.innerHTML = `
+                <h3>Protocol Complete!</h3>
+                <p>Well done, you've completed all items for today.</p>
+                <div class="modal-buttons-container">
+                    <button class="modal-action-button" id="completion-get-update-btn">Get Longevity Update</button>
+                    <button class="modal-action-button primary" id="completion-reset-btn">Reset Protocol</button>
+                    <button class="modal-action-button" id="completion-cancel-btn">Cancel</button>
+                </div>
+            `;
+            completionModal.classList.add('visible');
+        }
+
+        function checkCompletion() {
+            if (checkedItems.size === supplementData.length && supplementData.length > 0) {
+                vibrate([100, 50, 100]);
+                showInitialCompletionModal();
+            }
+        }
+
+        // --- 4. GEMINI API INTEGRATION ---
+        async function getLongevityUpdate() {
+            completionModalContent.innerHTML = `<div class="loading-spinner"></div><p>Getting your update...</p>`;
+            
+            const supplementList = supplementData.map(s => s.name).join(', ');
+
+            let prompt = `Based on an interest in supplements like ${supplementList}, provide a very short and brief update on one emerging longevity trend. Keep it concise (around 40-60 words) and easy to understand.`;
+
+            // IMPORTANT: You must get your own API key from Google AI Studio.
+            // Paste it here to make the feature work when hosting outside of Gemini.
+            const apiKey = ""; // <--- PASTE YOUR API KEY HERE
+
+            if (!apiKey) {
+                completionModalContent.innerHTML = `
+                    <h3>Error</h3>
+                    <p>API key is missing. Please add your Gemini API key to the script to use this feature.</p>
+                    <div class="modal-buttons-container">
+                         <button class="modal-action-button" id="close-completion-modal-btn">Close</button>
+                    </div>
+                `;
+                return;
+            }
+
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API request failed: ${errorData?.error?.message || 'Unknown error'}`);
+                }
+
+                const result = await response.json();
+                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    completionModalContent.innerHTML = `
+                        <h3>Longevity Update</h3>
+                        <div class="gemini-content"><p>${text.replace(/\n/g, '<br>')}</p></div>
+                        <div class="modal-buttons-container">
+                            <button class="modal-action-button" id="learn-more-btn">Learn More</button>
+                            <button class="modal-action-button primary" id="close-and-reset-btn">Close & Reset</button>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('No content in API response.');
+                }
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                completionModalContent.innerHTML = `
+                    <h3>Error</h3>
+                    <p>Sorry, I couldn't get an update at the moment. Please check the API key and your connection.</p>
+                    <div class="modal-buttons-container">
+                         <button class="modal-action-button" id="close-completion-modal-btn">Close</button>
+                    </div>
+                `;
+            }
+        }
+
+        // --- 5. EVENT HANDLERS ---
+        mainContent.addEventListener('click', (e) => {
+            const target = e.target;
+
+            const checkAllClickedButton = target.closest('.check-all-button');
+            if (checkAllClickedButton) {
+                e.stopPropagation(); 
+                vibrate();
+                const sectionEl = checkAllClickedButton.closest('.section');
+                if (!sectionEl) return;
+
+                const sectionKey = sectionEl.dataset.sectionKey;
+                const itemsInSection = supplementData.filter(item => item.section === sectionKey);
+                const allCurrentlyCheckedInSection = itemsInSection.length > 0 && itemsInSection.every(item => checkedItems.has(item.id));
+
+                itemsInSection.forEach(item => {
+                    const checkbox = sectionEl.querySelector(`#check-${item.id}`);
+                    const listItemEl = document.getElementById(item.id); 
+
+                    if (allCurrentlyCheckedInSection) { 
+                        checkedItems.delete(item.id);
+                        if(checkbox) checkbox.checked = false;
+                        listItemEl?.classList.remove('checked');
+                    } else { 
+                        checkedItems.add(item.id);
+                        if(checkbox) checkbox.checked = true;
+                        listItemEl?.classList.add('checked');
+                    }
+                });
+                updateSectionVisuals(sectionKey);
+                saveState();
+                checkCompletion();
+                updateHeaderStatusIcons();
+                return; 
+            }
+
+            const infoButtonOnItem = target.closest('.supplement-item .info-icon');
+            if (infoButtonOnItem) {
+                 e.stopPropagation(); 
+                vibrate(30);
+                modalTextContent.textContent = infoButtonOnItem.dataset.details;
+                infoModal.classList.add('visible');
+                return; 
+            }
+            
+            const sectionHeader = target.closest('.section-header');
+            if (sectionHeader) {
+                vibrate(30);
+                const sectionEl = sectionHeader.parentElement; 
+                sectionEl.classList.toggle('collapsed');
+                sectionHeader.setAttribute('aria-expanded', !sectionEl.classList.contains('collapsed'));
+                const sectionContent = sectionEl.querySelector('.section-content');
+                if (sectionContent) sectionContent.setAttribute('aria-hidden', sectionEl.classList.contains('collapsed'));
+                saveState(); 
+                return; 
+            }
+            
+            const listItem = target.closest('.supplement-item');
+            if (listItem && !target.matches('input[type="checkbox"]')) { 
+                const checkbox = listItem.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true })); 
+                }
+                return; 
+            }
+        });
+
+        mainContent.addEventListener('change', (e) => {
+            if (e.target.matches('input[type="checkbox"]')) {
+                vibrate();
+                const id = e.target.dataset.id;
+                const listItem = e.target.closest('.supplement-item'); 
+                const sectionKey = listItem?.closest('.section')?.dataset.sectionKey;
+
+                if (e.target.checked) {
+                    checkedItems.add(id);
+                    listItem?.classList.add('checked'); 
+                } else {
+                    checkedItems.delete(id);
+                    listItem?.classList.remove('checked'); 
+                }
+                if(sectionKey) updateSectionVisuals(sectionKey);
+                saveState();
+                checkCompletion();
+                updateHeaderStatusIcons();
+            }
+        });
+
+        // Modal Close Handlers & Completion Modal actions
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal || e.target === infoModalCloseButton) {
+                infoModal.classList.remove('visible');
+            }
+        });
+
+        completionModal.addEventListener('click', (e) => {
+            const target = e.target;
+            if (target === completionModal) {
+                 completionModal.classList.remove('visible');
+                 return;
+            }
+            // Use .closest() to handle clicks on button text/icons
+            const resetBtn = target.closest('#completion-reset-btn');
+            const cancelBtn = target.closest('#completion-cancel-btn');
+            const getUpdateBtn = target.closest('#completion-get-update-btn');
+            const learnMoreBtn = target.closest('#learn-more-btn');
+            const closeAndResetBtn = target.closest('#close-and-reset-btn');
+            const closeBtn = target.closest('#close-completion-modal-btn');
+
+            if(resetBtn) performReset();
+            if(cancelBtn || closeBtn) completionModal.classList.remove('visible');
+            if(getUpdateBtn) getLongevityUpdate();
+            if(closeAndResetBtn) performReset();
+            if(learnMoreBtn) console.log("Action: Start new Gemini chat with the displayed content.");
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") {
+                if (infoModal.classList.contains('visible')) infoModal.classList.remove('visible');
+                if (completionModal.classList.contains('visible')) completionModal.classList.remove('visible');
+            }
+        });
+
+        // --- 6. INITIALIZATION ---
+        renderHeaderIcons();
+        const initiallyCollapsed = loadState();
+        render(initiallyCollapsed); 
+        checkCompletion(); 
+        updateHeaderStatusIcons();
+
+    });
+    </script>
+</body>
+</html>
