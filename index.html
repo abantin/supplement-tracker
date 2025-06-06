@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Daily Protocol</title>
+
+    <!-- iOS Home Screen Icons & Web App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Protocol">
+    <link rel="apple-touch-icon" href="app_icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="app_icon.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="app_icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="app_icon.png">
+    <!-- A general favicon for browsers -->
+    <link rel="icon" href="favicon.png" type="image/png">
+
+
     <style>
         /* 1. Global Styles & Theming */
         :root {
@@ -455,7 +468,6 @@
         <header class="app-header">
             <div class="header-top-row">
                 <h1>Daily Protocol</h1>
-                <!-- Analyse button removed -->
             </div>
             <div class="header-status-icons" id="header-status-icons">
                 <!-- Status Icons will be dynamically generated here -->
@@ -713,7 +725,8 @@
         }
 
         function checkCompletion() {
-            if (checkedItems.size === supplementData.length && supplementData.length > 0) {
+            // Check if all items are checked AND the completion modal is not already visible
+            if (checkedItems.size === supplementData.length && supplementData.length > 0 && !completionModal.classList.contains('visible')) {
                 vibrate([100, 50, 100]);
                 showInitialCompletionModal();
             }
@@ -729,7 +742,7 @@
 
             // IMPORTANT: You must get your own API key from Google AI Studio.
             // Paste it here to make the feature work when hosting outside of Gemini.
-            const apiKey = "AIzaSyBSs_O_W4WTEkvNUmTtTI6phoGiqayO63I"; // <--- PASTE YOUR API KEY HERE
+            const apiKey = ""; // <--- PASTE YOUR API KEY HERE
 
             if (!apiKey) {
                 completionModalContent.innerHTML = `
@@ -764,7 +777,7 @@
                 if (text) {
                     completionModalContent.innerHTML = `
                         <h3>Longevity Update</h3>
-                        <div class="gemini-content"><p>${text.replace(/\n/g, '<br>')}</p></div>
+                        <div class="gemini-content" id="gemini-trend-text"><p>${text.replace(/\n/g, '<br>')}</p></div>
                         <div class="modal-buttons-container">
                             <button class="modal-action-button" id="learn-more-btn">Learn More</button>
                             <button class="modal-action-button primary" id="close-and-reset-btn">Close & Reset</button>
@@ -899,7 +912,15 @@
             if(cancelBtn || closeBtn) completionModal.classList.remove('visible');
             if(getUpdateBtn) getLongevityUpdate();
             if(closeAndResetBtn) performReset();
-            if(learnMoreBtn) console.log("Action: Start new Gemini chat with the displayed content.");
+            if(learnMoreBtn) {
+                const trendTextElement = document.getElementById('gemini-trend-text');
+                if (trendTextElement) {
+                    const trendText = trendTextElement.textContent || trendTextElement.innerText;
+                    const prompt = `Tell me more about the following longevity trend: ${trendText}`;
+                    const geminiUrl = `https://gemini.google.com/app?prompt=${encodeURIComponent(prompt)}`;
+                    window.open(geminiUrl, '_blank');
+                }
+            }
         });
 
         document.addEventListener('keydown', (e) => {
@@ -913,7 +934,7 @@
         renderHeaderIcons();
         const initiallyCollapsed = loadState();
         render(initiallyCollapsed); 
-        checkCompletion(); 
+        // checkCompletion();  // Don't show completion modal on initial load
         updateHeaderStatusIcons();
 
     });
